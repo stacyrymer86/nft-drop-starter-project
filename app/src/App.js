@@ -30,6 +30,15 @@ const App = () => {
       console.error(error);
     }
   };
+   const connectWallet = async () => {};
+  const renderNotConnectedContainer = () => (
+    <button
+      className="cta-button connect-wallet-button"
+      onClick={connectWallet}
+    >
+      Connect to Wallet
+    </button>
+  );
 
   /*
    * When our component first mounts, let's check to see if we have a connected
