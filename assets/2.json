@@ -1,0 +1,19 @@
+{
+    "name": "NUMBER_GAME",
+    "symbol": "",
+    "image": "2.png",
+    "properties": {
+      "files": [
+        {
+          "uri": "2.png",
+          "type": "image/png"
+        }
+      ],
+      "creators": [
+        {
+          "address": "HUk23Xypjs9pKAvwtudRew1qeNkrrJJC3BzEmRY3qjUK",
+          "share": 100
+        }
+      ]
+    }
+  }
