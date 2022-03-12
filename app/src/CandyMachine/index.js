@@ -348,8 +348,6 @@ const getProvider = () => {
       console.log(e);
     }
     return [];
-  };
-
   return (
     <div className="machine-container">
       <p>Drop Date:</p>
@@ -357,7 +355,7 @@ const getProvider = () => {
       <button className="cta-button mint-button" onClick={mintToken}>
         Mint NFT
       </button>
-    </div>
+    </div>)
   };
   
 export default CandyMachine;
