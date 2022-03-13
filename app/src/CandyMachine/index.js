@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Connection, PublicKey } from '@solana/web3.js';
+import { Connection, PublicKey, sendAndConfirmTransaction } from '@solana/web3.js';
 import { Program, Provider, web3 } from '@project-serum/anchor';
 import { MintLayout, TOKEN_PROGRAM_ID, Token } from '@solana/spl-token';
 import { sendTransactions } from './connection';
@@ -37,9 +37,9 @@ const getProvider = () => {
   // Create a new connection object
   const connection = new Connection(rpcHost);
 
-  // Get metadata about your deployed candy machine program
+const test = async () =>{
   const idl = await Program.fetchIdl(candyMachineProgram, provider);
-
+};
     // Create a program that you can call
     const program = new Program(idl, candyMachineProgram, provider);
 
