@@ -37,9 +37,9 @@ const getProvider = () => {
   // Create a new connection object
   const connection = new Connection(rpcHost);
 
-const test = async () =>{
+const test = async () => {
   const idl = await Program.fetchIdl(candyMachineProgram, provider);
-};
+
     // Create a program that you can call
     const program = new Program(idl, candyMachineProgram, provider);
 
@@ -47,7 +47,7 @@ const test = async () =>{
   const candyMachine = await program.account.candyMachine.fetch(
     process.env.REACT_APP_CANDY_MACHINE_ID
   );
-  
+  }; 
   const itemsAvailable = candyMachine.data.itemsAvailable.toNumber();
   const itemsRedeemed = candyMachine.itemsRedeemed.toNumber();
   const itemsRemaining = itemsAvailable - itemsRedeemed;
