@@ -14,6 +14,8 @@ import {
   CIVIC
 } from './helpers';
 
+const [candyMachine, setCandyMachine]= useState(null)
+
 const { SystemProgram } = web3;
 const opts = {
   preflightCommitment: 'processed',
