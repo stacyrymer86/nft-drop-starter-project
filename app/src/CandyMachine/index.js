@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import './CountdownTimer.css';
 import { Connection, PublicKey, sendAndConfirmTransaction } from '@solana/web3.js';
 import { Program, Provider, web3 } from '@project-serum/anchor';
 import { MintLayout, TOKEN_PROGRAM_ID, Token } from '@solana/spl-token';
@@ -170,7 +171,7 @@ const test = async () => {
         TOKEN_PROGRAM_ID,
         mint.publicKey,
         0,
-        
+
         walletAddress.publicKey,
         walletAddress.publicKey,
       ),
@@ -358,6 +359,17 @@ const test = async () => {
         Mint NFT
       </button>
     </div>)
+  };
+  const CountdownTimer = ({ dropDate }) => {
+    // State
+    const [timerString, setTimerString] = useState('');
+  
+    return (
+      <div className="timer-container">
+        <p className="timer-header">Candy Drop Starting In</p>
+        {timerString && <p className="timer-value">{`⏰ ${timerString}`}</p>}
+      </div>
+    );
   };
   
 export default CandyMachine;
