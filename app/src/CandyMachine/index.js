@@ -170,6 +170,7 @@ const test = async () => {
         TOKEN_PROGRAM_ID,
         mint.publicKey,
         0,
+        
         walletAddress.publicKey,
         walletAddress.publicKey,
       ),
