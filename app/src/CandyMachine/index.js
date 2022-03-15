@@ -1,6 +1,5 @@
-import React, { useEffect } from 'react';
-import './CountdownTimer.css';
-import { Connection, PublicKey, sendAndConfirmTransaction } from '@solana/web3.js';
+import React, { useEffect, useState } from 'react';
+import { Connection, PublicKey } from '@solana/web3.js';
 import { Program, Provider, web3 } from '@project-serum/anchor';
 import { MintLayout, TOKEN_PROGRAM_ID, Token } from '@solana/spl-token';
 import { sendTransactions } from './connection';
@@ -15,14 +14,101 @@ import {
   CIVIC
 } from './helpers';
 
-const [candyMachine, setCandyMachine]= useState(null)
-
 const { SystemProgram } = web3;
 const opts = {
   preflightCommitment: 'processed',
 };
 
 const CandyMachine = ({ walletAddress }) => {
+
+  const [candyMachine, setCandyMachine] = useState(null);
+
+  useEffect(() => {
+    getCandyMachineState();
+  }, []);   
+
+  const getProvider = () => {
+    const rpcHost = process.env.REACT_APP_SOLANA_RPC_HOST;
+    // Create a new connection object
+    const connection = new Connection(rpcHost);
+    
+    // Create a new Solana provider object
+    const provider = new Provider(
+      connection,
+      window.solana,
+      opts.preflightCommitment
+    );
+  
+    return provider;
+  };
+
+  // Declare getCandyMachineState as an async method
+  const getCandyMachineState = async () => { 
+    const provider = getProvider();
+    const idl = await Program.fetchIdl(candyMachineProgram, provider);
+    const program = new Program(idl, candyMachineProgram, provider);
+    const candyMachine = await program.account.candyMachine.fetch(
+      process.env.REACT_APP_CANDY_MACHINE_ID
+    );
+    
+    const itemsAvailable = candyMachine.data.itemsAvailable.toNumber();
+    const itemsRedeemed = candyMachine.itemsRedeemed.toNumber();
+    const itemsRemaining = itemsAvailable - itemsRedeemed;
+    const goLiveData = candyMachine.data.goLiveDate.toNumber();
+    const presale = candyMachine.data.presale;
+  
+    const goLiveDateTimeString = `${new Date(
+      goLiveData * 1000
+    ).toGMTString()}`
+  
+    // Add this data to your state to render
+    setCandyMachine({
+      id: process.env.REACT_APP_CANDY_MACHINE_ID,
+      program,
+      state: {
+        itemsAvailable,
+        itemsRedeemed,
+        itemsRemaining,
+        goLiveData,
+        goLiveDateTimeString,
+        isSoldOut: itemsRemaining === 0,
+        isActive:
+          (presale ||
+            candyMachine.data.goLiveDate.toNumber() < new Date().getTime() / 1000) &&
+          (candyMachine.endSettings
+            ? candyMachine.endSettings.endSettingType.date
+              ? candyMachine.endSettings.number.toNumber() > new Date().getTime() / 1000
+              : itemsRedeemed < candyMachine.endSettings.number.toNumber()
+            : true),
+        isPresale: presale,
+        goLiveDate: candyMachine.data.goLiveDate,
+        treasury: candyMachine.wallet,
+        tokenMint: candyMachine.tokenMint,
+        gatekeeper: candyMachine.data.gatekeeper,
+        endSettings: candyMachine.data.endSettings,
+        whitelistMintSettings: candyMachine.data.whitelistMintSettings,
+        hiddenSettings: candyMachine.data.hiddenSettings,
+        price: candyMachine.data.price,
+      },
+    });
+  
+    console.log({
+      itemsAvailable,
+      itemsRedeemed,
+      itemsRemaining,
+      goLiveData,
+      goLiveDateTimeString,
+    });
+  };
+
+// Get metadata about your deployed candy machine program
+const provider = getProvider();
+const idl = Program.fetchIdl(candyMachineProgram, provider);
+//await Program.
+
+// Create a program that you can call
+const program = new Program(idl, candyMachineProgram, provider);
+
 
   const getCandyMachineCreator = async (candyMachine) => {
     const candyMachineID = new PublicKey(candyMachine);
@@ -31,71 +117,19 @@ const CandyMachine = ({ walletAddress }) => {
         candyMachineProgram,
     );
   };
-  useEffect(() => {
-    getCandyMachineState();
-  }, []);	
-}
-const getProvider = () => {
-  const rpcHost = process.env.REACT_APP_SOLANA_RPC_HOST;
-  // Create a new connection object
-  const connection = new Connection(rpcHost);
 
-const test = async () => {
-  const idl = await Program.fetchIdl(candyMachineProgram, provider);
-
-    // Create a program that you can call
-    const program = new Program(idl, candyMachineProgram, provider);
-
-      // Fetch the metadata from your candy machine
-  const candyMachine = await program.account.candyMachine.fetch(
-    process.env.REACT_APP_CANDY_MACHINE_ID
-  );
-  }; 
-  const itemsAvailable = candyMachine.data.itemsAvailable.toNumber();
-  const itemsRedeemed = candyMachine.itemsRedeemed.toNumber();
-  const itemsRemaining = itemsAvailable - itemsRedeemed;
-  const goLiveData = candyMachine.data.goLiveDate.toNumber();
-  const presale =
-    candyMachine.data.whitelistMintSettings &&
-    candyMachine.data.whitelistMintSettings.presale &&
-    (!candyMachine.data.goLiveDate ||
-      candyMachine.data.goLiveDate.toNumber() > new Date().getTime() / 1000);
-  
-  // We will be using this later in our UI so let's generate this now
-  const goLiveDateTimeString = `${new Date(
-    goLiveData * 1000
-  ).toGMTString()}`
-
-  console.log({
-    itemsAvailable,
-    itemsRedeemed,
-    itemsRemaining,
-    goLiveData,
-    goLiveDateTimeString,
-    presale,
-  });
-
-  // Create a new Solana provider object
-  const provider = new Provider(
-    connection,
-    window.solana,
-    opts.preflightCommitment
-  );
-
-  return provider;
-};
-  async function getMetadata(mint) {
-  return (
-    await PublicKey.findProgramAddress(
-      [
-        Buffer.from('metadata'),
-        TOKEN_METADATA_PROGRAM_ID.toBuffer(),
-        mint.toBuffer(),
-      ],
-      TOKEN_METADATA_PROGRAM_ID
-    )
-  )[0];
-}
+  const getMetadata = async (mint) => {
+    return (
+      await PublicKey.findProgramAddress(
+        [
+          Buffer.from('metadata'),
+          TOKEN_METADATA_PROGRAM_ID.toBuffer(),
+          mint.toBuffer(),
+        ],
+        TOKEN_METADATA_PROGRAM_ID
+      )
+    )[0];
+  };
 
   const getMasterEdition = async (mint) => {
     return (
@@ -171,7 +205,6 @@ const test = async () => {
         TOKEN_PROGRAM_ID,
         mint.publicKey,
         0,
-
         walletAddress.publicKey,
         walletAddress.publicKey,
       ),
@@ -351,6 +384,8 @@ const test = async () => {
       console.log(e);
     }
     return [];
+  };
+
   return (
     <div className="machine-container">
       <p>Drop Date:</p>
@@ -358,18 +393,8 @@ const test = async () => {
       <button className="cta-button mint-button" onClick={mintToken}>
         Mint NFT
       </button>
-    </div>)
-  };
-  const CountdownTimer = ({ dropDate }) => {
-    // State
-    const [timerString, setTimerString] = useState('');
-  
-    return (
-      <div className="timer-container">
-        <p className="timer-header">Candy Drop Starting In</p>
-        {timerString && <p className="timer-value">{`⏰ ${timerString}`}</p>}
-      </div>
-    );
-  };
-  
+    </div>
+  );
+};
+
 export default CandyMachine;
